@@ -1,0 +1,21 @@
+<section class="container my-5">
+    <h3 class="text-center fw-bolder">LOGIN YOUR ACCOUNT</h3>
+    {{>message_form}}
+    <div class="row justify-content-center g-0">
+        <div class="col-md-5 col">
+            <form class="form-add-project pt-3" method="post" action="/login">
+                <div class="mb-3">
+                    <label for="email" class="form-label text-bold fw-bold">Email</label>
+                    <input type="text" class="form-control shadow" id="email" name="email">
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label text-bold fw-bold">Password</label>
+                    <input type="password" class="form-control shadow" id="password" name="password">
+                </div>
+                <button type="submit"
+                    class="btn d-block ms-auto rounded-pill btn-p-rounded bg-dark text-white">submit</button>
+            </form>
+        </div>
+
+    </div>
+</section>

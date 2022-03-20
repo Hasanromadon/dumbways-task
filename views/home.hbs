@@ -1,0 +1,27 @@
+{{#if messages.success}}
+<div class="container sticky-top mt-4">
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{messages.success}}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+</div>
+{{/if}}
+
+{{>hero}}
+{{>project}}
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Are you sure will delete this project?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <a class="btn btn-primary" id="btn-continue-action">Yes, Please</a>
+            </div>
+        </div>
+    </div>
+</div>

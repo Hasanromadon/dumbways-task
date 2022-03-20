@@ -1,0 +1,36 @@
+<section class="mt-5 bg-light">
+    <div class="container py-4 pb-5">
+        <h3 class="text-center mb-4 fw-bold">MY PROJECT</h3>
+        <div class="row g-0 g-md-3 gy-4 projects-container">
+            {{#each projects}}
+            <div class="col-md-4 col-12">
+                <div class="card p-md-3 p-1 card-project shadow-sm border-0" data-id={{this.id}}>
+                    <div class="row g-0 card-photo-wrapper rounded">
+                        <img src="/public/data/uploads/{{this.image}}" class=" card-project-photo" alt="...">
+                    </div>
+                    <div class="card-body card-project-body px-0 pb-0 position-relative">
+                        <a href="/project-detail/{{this.id}}" class="card-title card-title-link mb-0">{{this.name}}</a>
+                        <p class="mb-3 text-secondary ">duration: {{this.duration}}</p>
+                        <p class="card-description">{{this.description}}</p>
+
+                        <div class="card-technologies my-4">
+                            {{#each this.technologies}}
+                            <img src="/public/assets/icons/{{this}}.svg" />
+                            {{/each}}
+                        </div>
+
+                        <div class="d-flex gap-1 card-action position-absolute bottom-0 w-100">
+                            <a href="/edit-project/{{this.id}}" class="btn btn-dark">edit</a>
+                            <!-- Button trigger modal -->
+                            <button type="button" class="btn btn-dark btn-delete " data-bs-toggle="modal"
+                                data-bs-target="#exampleModal">
+                                delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {{/each}}
+        </div>
+    </div>
+</section>

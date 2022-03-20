@@ -1,0 +1,70 @@
+<section class="container my-5">
+    <h3 class="text-center fw-bolder">ADD MY PROJECT</h3>
+    {{>message_form}}
+    <div class="row justify-content-center g-0 ">
+        <div class="col-md-5 col-12">
+            <form class="form-add-project pt-3" enctype="multipart/form-data" method="post" action="/add-project">
+                <div class="mb-3">
+                    <label for="name" class="form-label text-bold fw-bold">Project Name</label>
+                    <input type="name" class="form-control shadow" id="name" name="name" required {{#if project.name}}
+                        value="{{project.name}}" {{/if}}>
+                </div>
+                <div class=" row mb-3 g-1">
+                    <div class="col-6">
+                        <label for="startdate" class="form-label fw-bold ">Start Date</label>
+                        <input type="date" class="form-control shadow" id="startdate" name="startdate" required {{#if
+                            project.startdate}} value="{{project.startdate}}" {{/if}}>
+                    </div>
+                    <div class="col-6">
+                        <label for="enddate" class="form-label fw-bold ">End Date</label>
+                        <input type="date" class="form-control shadow" id="enddate" name="enddate" {{#if
+                            project.enddate}} value="{{project.enddate}}" {{/if}} required>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label text-bold fw-bold">Description</label>
+                    <textarea class="form-control shadow" id="description" name="description" rows="4"
+                        required>{{#if project.description}}{{project.description}}{{/if}}</textarea>
+                </div>
+                <div class="row mb-3 g-0">
+                    <label class="form-label fw-bold ">Technologies </label>
+                    <div class="col-6 mb-1">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="node" {{#if technologies.node}} checked
+                                {{/if}} name="technologies" value="node">
+                            <label class="form-check-label" for="node">Node JS</label>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-1">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="next" {{#if technologies.next}} checked
+                                {{/if}} name="technologies" value="next">
+                            <label class="form-check-label" for="next">Next JS</label>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="react" name="technologies" {{#if
+                                technologies.react}} checked {{/if}} value="react">
+                            <label class="form-check-label" for="react">React JS</label>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="typescript" name="technologies" {{#if
+                                technologies.typescript}} checked {{/if}} value="typescript">
+                            <label class="form-check-label" for="typescript">Typescript</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="image" class="form-label text-bold fw-bold">Image</label>
+                    <input type="file" class="form-control shadow" id="image" name="image">
+                </div>
+                <button type="submit"
+                    class="btn d-block ms-auto rounded-pill btn-p-rounded bg-dark text-white">Submit</button>
+            </form>
+        </div>
+
+    </div>
+</section>
