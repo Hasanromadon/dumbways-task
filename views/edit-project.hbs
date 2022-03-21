@@ -60,9 +60,9 @@
                 <div class="mb-5">
                     <label for="image" class="form-label text-bold fw-bold">Upload Image</label>
                     <div class="image-edit-wrapper mb-3 rounded">
-                        <img class=" image-edit d-block " src="/public/data/uploads/{{project.image}}" />
+                        <img class=" image-edit d-block " src="/uploads/projects/{{project.image}}" />
                     </div>
-                    <input type="file" class="form-control shadow" id="image" name="image">
+                    <input type="file" class="form-control shadow" id="image" name="image" accept="image/*">
                 </div>
                 <button type="submit"
                     class="btn d-block ms-auto rounded-pill btn-p-rounded bg-dark text-white">Submit</button>

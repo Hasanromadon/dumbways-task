@@ -6,7 +6,7 @@
             <div class="col-md-4 col-12">
                 <div class="card p-md-3 p-1 card-project shadow-sm border-0" data-id={{this.id}}>
                     <div class="row g-0 card-photo-wrapper rounded">
-                        <img src="/public/data/uploads/{{this.image}}" class=" card-project-photo" alt="...">
+                        <img src="/uploads/projects/{{this.image}}" class=" card-project-photo" alt="...">
                     </div>
                     <div class="card-body card-project-body px-0 pb-0 position-relative">
                         <a href="/project-detail/{{this.id}}" class="card-title card-title-link mb-0">{{this.name}}</a>
@@ -18,7 +18,7 @@
                             <img src="/public/assets/icons/{{this}}.svg" />
                             {{/each}}
                         </div>
-
+                        {{#if ../isLogin}}
                         <div class="d-flex gap-1 card-action position-absolute bottom-0 w-100">
                             <a href="/edit-project/{{this.id}}" class="btn btn-dark">edit</a>
                             <!-- Button trigger modal -->
@@ -27,6 +27,7 @@
                                 delete
                             </button>
                         </div>
+                        {{/if}}
                     </div>
                 </div>
             </div>

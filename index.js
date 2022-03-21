@@ -11,34 +11,24 @@ const helpers = require('./utils/hbsHelpers');
 const getDuration = require('./utils/getDuration');
 const formatLongDate = require('./utils/formatLongDate');
 const db = require('./connection/db');
-const multer = require('multer');
-const storage = multer.diskStorage({
-    destination: './public/data/uploads/',
-    filename: function (req, file, cb) {
-        cb(
-            null,
-            Date.now() + path.extname(file.originalname)
-        );
-    },
-});
+const upload = require('./middlewares/uploadFile');
+const formatFormDate = require('./utils/formatFormDate');
 
-const upload = multer({ storage });
 const PORT = '5000';
-
 let urlAdd = false;
 
 // middleware
 app.use(express.urlencoded({ extended: false }));
-app.use(flash());
+
 app.use(
     session({
-        secret: 'rahasia',
+        secret: 'project-secret',
         resave: false,
         saveUninitialized: true,
-        cookie: { maxAge: 1000 * 60 * 60 * 2 },
+        cookie: { maxAge: 1000 * 60 * 60 * 3 },
     })
 );
-
+app.use(flash());
 // hbs config
 hbs.registerPartials(path.join(__dirname, 'views', 'partials'), (err) => {
 
@@ -51,25 +41,37 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
 
 app.use('/public', express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
 // GET
 app.get('/', async (req, res) => {
+
+    const user = req.session.user;
+    const isLogin = req.session.isLogin;
+
     db.connect((err, client, done) => {
         if (err) throw err;
-        const query = 'SELECT * FROM tb_projects ORDER BY id DESC';
+        let query = ''
+        if (isLogin) {
+            query = `SELECT tb_projects.*, tb_user.id AS "user_id", tb_user.name AS username, tb_user.email
+            FROM tb_projects LEFT JOIN tb_user ON tb_projects.user_id = tb_user.id WHERE tb_projects.user_id=${user.id} ORDER BY id DESC`;
+        } else {
+            query = 'SELECT tb_projects.* FROM tb_projects ORDER BY id DESC';
+        }
+
+        console.log(isLogin);
         client.query(query, (err, result) => {
             if (err) throw err;
             done();
-            let dataProjects = result.rows.map((project) => (
-                {
+            let dataProjects = result.rows.map((project) => {
+                return {
                     ...project,
-                    description: project.description.substring(1, 50),
+                    description: project.description.length > 50 ? project.description.substring(0, 60) + '...' : project.description,
                     duration: getDuration(project.end_date, project.start_date)
                 }
-            ));
-
-            res.render('home', { title: 'Home', projects: dataProjects, isLogin: req.session.isLogin, user: req.session.user, });
+            });
+            res.render('home', { title: 'Home', projects: dataProjects, isLogin: isLogin, user });
         });
 
     })
@@ -100,7 +102,7 @@ app.get('/project-detail/:id', (req, res) => {
 })
 
 // ADD PROJECT
-app.get('/add-project', (req, res, next) => {
+app.get('/add-project', (req, res) => {
     if (!req.session.isLogin) {
         req.flash('error', 'Please Login before you add post');
         urlAdd = true;
@@ -113,20 +115,28 @@ app.get('/add-project', (req, res, next) => {
 // POST PROJECT
 app.post('/add-project', upload.single('image'), (req, res) => {
     let project = req.body;
+    let technologies = [];
     const isSomeEmpty = Object.values(project).some(value => value === '' || value.length === 0);
     const isTechonlogies = project.technologies;
+    const user = req.session.user;
+    const isLogin = req.session.isLogin;
 
     if (isSomeEmpty || isTechonlogies === undefined) {
         req.flash('error', 'please fill in all fields');
-        return res.render('add-project', { title: 'Add Project', project, isLogin: req.session.isLogin, user: req.session.user, });
+        if (!isTechonlogies === undefined) {
+            project.technologies.forEach((tech) => (
+                technologies[tech] = true
+            ))
+        }
+        return res.render('add-project', { title: 'Add Project', project, isLogin, user });
     } else {
         if (project.startdate > project.enddate) {
             req.flash('error', 'end date must greater than start date! ');
-            return res.render('add-project', { title: 'Add Project', project, isLogin: req.session.isLogin, user: req.session.user, });
+            return res.render('add-project', { title: 'Add Project', project, isLogin, user });
         }
         if (!req.file) {
             req.flash('error', 'please select an image');
-            res.render('add-project', { title: 'Add Project', project, isLogin: req.session.isLogin, user: req.session.user, });
+            res.render('add-project', { title: 'Add Project', project, isLogin, user });
             return;
         } else {
             project.image = req.file.filename;
@@ -142,13 +152,14 @@ app.post('/add-project', upload.single('image'), (req, res) => {
     queryArray = queryArray.substring(queryArray.length - 1, 1);
     db.connect((err, client, done) => {
         if (err) throw err;
-        const query = `INSERT INTO tb_projects (name, start_date, end_date, description, technologies, image) VALUES (
+        const query = `INSERT INTO tb_projects (name, start_date, end_date, description, technologies, image, user_id) VALUES (
             '${project.name}',
             '${project.startdate}',
             '${project.enddate}',
             '${project.description}',
             ARRAY ['${queryArray}],
-            '${project.image}')`;
+            '${project.image}',
+            '${user.id}')`;
 
         client.query(query, (err, result) => {
             if (err) throw err;
@@ -176,8 +187,8 @@ app.get('/edit-project/:id', (req, res) => {
             done();
             project = {
                 ...project,
-                start_date: new Date(project.start_date).toLocaleDateString('en-GB').split('/').reverse().join('-'),
-                end_date: new Date(project.end_date).toLocaleDateString('en-GB').split('/').reverse().join('-'),
+                start_date: formatFormDate(project.start_date),
+                end_date: formatFormDate(project.end_date)
             };
             // transform tech array tobe object
             let technologies = [];
@@ -242,8 +253,8 @@ app.post('/edit-project/:id', upload.single('image'), (req, res) => {
 
 
             if (queryImage) {
-                if (fs.existsSync(path.join(__dirname, 'public/data/uploads', currentFile))) {
-                    fs.unlinkSync(path.join(__dirname, 'public/data/uploads', currentFile));
+                if (fs.existsSync(path.join(__dirname, 'uploads/projects', currentFile))) {
+                    fs.unlinkSync(path.join(__dirname, 'uploads/projects', currentFile));
                 }
             };
             req.flash('success', 'Project has been edited successfuly!');
@@ -274,8 +285,8 @@ app.get('/delete-project/:id', (req, res) => {
         client.query(query, (err, result) => {
             if (err) throw err;
             done();
-            if (fs.existsSync(path.join(__dirname, 'public/data/uploads', currentFile))) {
-                fs.unlinkSync(path.join(__dirname, 'public/data/uploads', currentFile), () => {
+            if (fs.existsSync(path.join(__dirname, 'uploads', 'projects', currentFile))) {
+                fs.unlinkSync(path.join(__dirname, 'uploads', 'projects', currentFile), () => {
                 });
             }
             req.flash('success', 'Project has been deleted!');
@@ -286,7 +297,7 @@ app.get('/delete-project/:id', (req, res) => {
 })
 
 
-// AUTHETICATION
+// AUTH
 app.get('/login', (req, res) => {
     if (req.session.isLogin) {
         return res.redirect('/');
@@ -298,7 +309,7 @@ app.post('/login', (req, res) => {
     const user = req.body;
 
     if (user.email == '' || user.password == '') {
-        req.flash('error', 'Please insert all field!');
+        req.flash('error', 'Please insert all fields!');
         return res.redirect('/login');
     }
 
@@ -337,16 +348,21 @@ app.post('/login', (req, res) => {
                 res.redirect('/add-project');
                 urlAdd = false;
             } else {
+                req.flash('success', 'You are successfully logged in')
                 res.redirect('/');
             }
 
         });
+
+        done();
     });
 });
 
 app.get('/logout', function (req, res) {
-    req.session.destroy();
-    res.redirect('/');
+    req.session.destroy(() => {
+        res.redirect('/');
+    });
+
 });
 
 
@@ -361,7 +377,6 @@ app.get('/register', (req, res) => {
 })
 app.post('/register', (req, res) => {
     const user = req.body;
-    console.log(user);
     if (user.name == '' || user.email == '' || user.password == '') {
         req.flash('error', 'Please Fill All Fields!');
         return res.redirect('/register');
@@ -399,7 +414,7 @@ app.post('/register', (req, res) => {
             }
         });
 
-
+        done();
     });
 
 
