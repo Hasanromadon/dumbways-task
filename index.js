@@ -14,7 +14,7 @@ const db = require('./connection/db');
 const upload = require('./middlewares/uploadFile');
 const formatFormDate = require('./utils/formatFormDate');
 
-const PORT = '5000';
+const PORT = process.env.PORT || '5000';
 let urlAdd = false;
 
 // middleware
