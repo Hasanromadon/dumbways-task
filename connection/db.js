@@ -5,7 +5,8 @@ const dbPool = new Pool({
     user: "ullvmhlbycfuzx",
     port: "5432",
     password: "99fe7c057106d683db7c3fc935684f756f123680db54798f217e5786c11321f9",
-    database: "dbvf5314ua3tbq"
+    database: "dbvf5314ua3tbq",
+    ssl: true
 });
 
 // const dbPool = new Pool({
