@@ -60,7 +60,6 @@ app.get('/', async (req, res) => {
             query = 'SELECT tb_projects.* FROM tb_projects ORDER BY id DESC';
         }
 
-        console.log(isLogin);
         client.query(query, (err, result) => {
             if (err) throw err;
             done();
