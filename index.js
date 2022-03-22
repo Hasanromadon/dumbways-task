@@ -86,6 +86,11 @@ app.get('/project-detail/:id', (req, res) => {
         const query = `SELECT * FROM tb_projects WHERE id=${id}`;
         client.query(query, (err, result) => {
             if (err) throw err;
+            if (result.rows.length === 0) {
+                req.flash('error', 'Project not found');
+                return res.redirect('/');
+
+            }
             let project = result.rows[0];
             done();
             project = {
@@ -171,17 +176,23 @@ app.post('/add-project', upload.single('image'), (req, res) => {
 
 // EDIT PROJECT
 app.get('/edit-project/:id', (req, res) => {
+
+    const user = req.session.user;
+
     if (!req.session.isLogin) {
         return res.redirect('/');
     }
-
     const id = req.params.id;
     db.connect((err, client, done) => {
         if (err) throw err;
 
-        const query = `SELECT * FROM tb_projects WHERE id=${id}`;
+        const query = `SELECT * FROM tb_projects WHERE id=${id} AND user_id=${user.id}`;
         client.query(query, (err, result) => {
             if (err) throw err;
+            if (result.rows.length === 0) {
+                req.flash('error', 'Project not found');
+                return res.redirect('/');
+            }
             let project = result.rows[0];
             done();
             project = {
@@ -266,6 +277,9 @@ app.post('/edit-project/:id', upload.single('image'), (req, res) => {
 // DELETE
 
 app.get('/delete-project/:id', (req, res) => {
+
+    const user = req.session.user;
+
     if (!req.session.isLogin) {
         req.flash('error', 'Please Login before you Delete');
         return res.redirect('/login');
@@ -274,10 +288,13 @@ app.get('/delete-project/:id', (req, res) => {
 
     db.connect((err, client, done) => {
         let currentFile = '';
-        client.query(`SELECT image FROM tb_projects WHERE id=${id}`, (err, result) => {
+        client.query(`SELECT image FROM tb_projects WHERE id=${id} AND user_id = ${user.id}`, (err, result) => {
             if (err) throw err;
             if (result.rows.length > 0) {
                 currentFile = result.rows[0].image;
+            } else {
+                req.flash('error', 'Cant delete not your own project!');
+                return res.redirect('/');
             }
         });
         const query = `DELETE FROM tb_projects WHERE id=${id}`;
@@ -417,16 +434,17 @@ app.post('/register', (req, res) => {
     });
 
 
-
 })
 
 
 app.get('/contact-me', (req, res) => {
-    res.render('contact-me', { title: 'Contact' });
+    const isLogin = req.session.isLogin
+    const user = req.session.user;
+    res.render('contact-me', { title: 'Contact', isLogin, user });
 });
 
 app.get('*', function (req, res) {
-    res.render('not-found.hbs', { title: 'Page not found', isLogin: req.session.isLogin, user: req.session.user, });
+    res.render('not-found', { title: 'Page not found', isLogin: req.session.isLogin, user: req.session.user, });
 });
 
 app.listen(PORT, () => {
